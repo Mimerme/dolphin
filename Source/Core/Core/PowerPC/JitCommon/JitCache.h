@@ -58,6 +58,7 @@ struct JitBlock
     u8* exitPtrs;  // to be able to rewrite the exit jump
     u32 exitAddress;
     bool linkStatus;  // is it already linked?
+    bool call;
   };
   std::vector<LinkData> linkData;
 
@@ -161,7 +162,7 @@ private:
   void UnlinkBlock(const JitBlock& block);
   void DestroyBlock(JitBlock& block);
 
-  void MoveBlockIntoFastCache(u32 em_address, u32 msr);
+  JitBlock* MoveBlockIntoFastCache(u32 em_address, u32 msr);
 
   // Fast but risky block lookup based on fast_block_map.
   size_t FastLookupIndexForAddress(u32 address);

@@ -72,7 +72,15 @@ endif()
 # TODO: Add DSPSpy
 option(DSPTOOL "Build dsptool" OFF)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMakeTests)
+list(APPEND CMAKE_MODULE_PATH
+	${CMAKE_SOURCE_DIR}/CMakeTests
+)
+
+# Support functions
+include(CheckAndAddFlag)
+include(CheckCCompilerFlag)
+include(DolphinCompileDefinitions)
+
 # Libraries to link
 set(LIBS)
 
@@ -86,15 +94,6 @@ else()
 	set(datadir ${CMAKE_INSTALL_PREFIX}/share/dolphin-emu CACHE PATH "datadir")
 	set(mandir  ${CMAKE_INSTALL_PREFIX}/share/man         CACHE PATH "mandir")
 	add_definitions(-DDATA_DIR="${datadir}/")
-endif()
-
-# Set file offset size to 64 bits.
-#
-# On modern Unixes, this is typically already the case. The lone exception is
-# glibc, which may default to 32 bits. glibc allows this to be configured
-# by setting _FILE_OFFSET_BITS.
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-	add_definitions(-D_FILE_OFFSET_BITS=64)
 endif()
 
 if(CMAKE_SYSROOT)
@@ -164,57 +163,46 @@ else()
 	add_definitions(-D_ARCH_32=1)
 endif()
 
-include(CheckCCompilerFlag)
 if(ENABLE_GENERIC)
 	message(STATUS "Warning! Building generic build!")
 	set(_M_GENERIC 1)
 	add_definitions(-D_M_GENERIC=1)
-elseif(_ARCH_64 AND (
-	${CMAKE_SYSTEM_PROCESSOR} MATCHES "^x86" OR
-	${CMAKE_SYSTEM_PROCESSOR} MATCHES "i.86" OR
-	${CMAKE_SYSTEM_PROCESSOR} MATCHES "amd64" OR
-	APPLE
-))
+elseif(_ARCH_64 AND CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64|amd64|AMD64")
 	set(_M_X86 1)
 	set(_M_X86_64 1)
-	add_definitions(-D_M_X86=1 -D_M_X86_64=1 -msse2)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-pie")
-	if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-		CHECK_C_COMPILER_FLAG("-no-pie" NO_PIE_UPSTREAM)
-		if(NO_PIE_UPSTREAM)
-			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
-		endif()
-		CHECK_C_COMPILER_FLAG("-nopie" NO_PIE_PATCHED)
-		if(NO_PIE_PATCHED)
-			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nopie")
-		endif()
-	endif()
-elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+	add_definitions(-D_M_X86=1)
+	add_definitions(-D_M_X86_64=1)
+	check_and_add_flag(HAVE_SSE2 -msse2)
+elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "aarch64")
 	set(_M_ARM 1)
 	set(_M_ARM_64 1)
-	add_definitions(-D_M_ARM=1 -D_M_ARM_64=1)
-	add_definitions(-march=armv8-a+crc)
+	add_definitions(-D_M_ARM=1)
+	add_definitions(-D_M_ARM_64=1)
+	# CRC instruction set is used in the CRC32 hash function
+	check_and_add_flag(HAVE_ARCH_ARMV8 -march=armv8-a+crc)
 else()
-	message(FATAL_ERROR "You're building on an unsupported platform. Enable generic build if you really want a JIT-less binary.")
+	message(FATAL_ERROR "You're building on an unsupported platform: "
+		"'${CMAKE_SYSTEM_PROCESSOR}' with ${CMAKE_SIZEOF_VOID_P}-byte pointers."
+		" Enable generic build if you really want a JIT-less binary.")
 endif()
 
-include(CheckCXXCompilerFlag)
-macro(check_and_add_flag var flag)
-	CHECK_CXX_COMPILER_FLAG(${flag} FLAG_${var})
-	if(FLAG_${var})
-		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}")
-	endif()
-endmacro()
 
 # Enforce minimum GCC version
 if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 5.0)
 	message(FATAL_ERROR "Dolphin requires at least GCC 5.0 (found ${CMAKE_CXX_COMPILER_VERSION})")
 endif()
 
-# Enabling all warnings in MSVC spams too much
-if(NOT MSVC)
-	add_definitions(-Wall)
+if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
+	check_and_add_flag(EXCEPTIONS /EHsc)
+	dolphin_compile_definitions(-D_DEBUG DEBUG_ONLY)
+
+	# Only MSBuild needs this, other generators will compile one file at a time
+	if(CMAKE_GENERATOR MATCHES "Visual Studio")
+		add_compile_options("/MP")
+	endif()
+else()
 	add_definitions(-D_DEFAULT_SOURCE)
+	check_and_add_flag(HAVE_WALL -Wall)
 	# TODO: would like these but they produce overwhelming amounts of warnings
 	#check_and_add_flag(EXTRA -Wextra)
 	#check_and_add_flag(MISSING_FIELD_INITIALIZERS -Wmissing-field-initializers)
@@ -231,26 +219,34 @@ if(NOT MSVC)
 	check_and_add_flag(INIT_SELF -Winit-self)
 	check_and_add_flag(MISSING_DECLARATIONS -Wmissing-declarations)
 	check_and_add_flag(MISSING_VARIABLE_DECLARATIONS -Wmissing-variable-declarations)
-endif(NOT MSVC)
 
-# gcc uses some optimizations which might break stuff without this flag
-add_definitions(-fno-strict-aliasing -fno-exceptions)
+	# gcc uses some optimizations which might break stuff without this flag
+	check_and_add_flag(NO_STRICT_ALIASING -fno-strict-aliasing)
+	check_and_add_flag(NO_EXCEPTIONS -fno-exceptions)
 
-check_and_add_flag(VISIBILITY_INLINES_HIDDEN -fvisibility-inlines-hidden)
-
-if(UNIX AND NOT APPLE)
+	check_and_add_flag(VISIBILITY_INLINES_HIDDEN -fvisibility-inlines-hidden)
 	check_and_add_flag(VISIBILITY_HIDDEN -fvisibility=hidden)
-endif()
 
-if(ENABLE_LTO)
-	check_and_add_flag(LTO -flto)
-	if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
-		set(CMAKE_AR gcc-ar)
-		set(CMAKE_RANLIB gcc-ranlib)
+	check_and_add_flag(FOMIT_FRAME_POINTER -fomit-frame-pointer RELEASE_ONLY)
+
+	dolphin_compile_definitions(_DEBUG DEBUG_ONLY)
+	check_and_add_flag(GGDB -ggdb DEBUG_ONLY)
+
+	if(NOT ANDROID AND _M_X86_64)
+		# PIE is required on Android, but not supported with the x86_64 jit currently
+		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-pie")
+		check_c_compiler_flag("-no-pie" NO_PIE_UPSTREAM)
+		if(NO_PIE_UPSTREAM)
+			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
+		endif()
+		check_c_compiler_flag("-nopie" NO_PIE_PATCHED)
+		if(NO_PIE_PATCHED)
+			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nopie")
+		endif()
 	endif()
 endif()
 
-if(APPLE)
+if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 	# This doesn't play well with the packaging script that doesn't understand @rpath
 	set(CMAKE_MACOSX_RPATH OFF)
 
@@ -263,16 +259,12 @@ if(APPLE)
 		# path entirely as was done in a previous version of this file.  This is
 		# still kinda evil, since it defeats the user's path settings...
 		# See http://www.cmake.org/cmake/help/v3.0/command/find_program.html
-		set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/usr")
+		list(APPEND CMAKE_PREFIX_PATH "/usr")
 	endif()
 
 	# Specify target CPUs.
-	set(TARGET_FLAGS "${TARGET_FLAGS} -mssse3")
-	set(TARGET_FLAGS "${TARGET_FLAGS} -march=core2")
-	# Target flags apply to both C and C++ compilation.
-	# CMake passes these to the compiler on the link command line as well.
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${TARGET_FLAGS}")
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TARGET_FLAGS}")
+	check_and_add_flag(HAVE_MSSSE3 -mssse3)
+	check_and_add_flag(HAVE_ARCH_CORE2 -march=core2)
 
 	# Linker flags.
 	# Drop unreachable code and data.
@@ -308,27 +300,29 @@ if(APPLE)
 		)
 endif()
 
-if(WIN32)
-	add_definitions(-D_SECURE_SCL=0)
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-	add_definitions(-D_CRT_SECURE_NO_DEPRECATE)
-endif(WIN32)
+if(ENABLE_LTO)
+	check_and_add_flag(LTO -flto)
+	if(CMAKE_CXX_COMPILER_ID STREQUAL GNU)
+		set(CMAKE_AR gcc-ar)
+		set(CMAKE_RANLIB gcc-ranlib)
+	endif()
+endif()
 
 # Add an option to build relocatable binaries on Linux
 # The Sys folder will need to be copied to the Binaries folder.
 if(UNIX)
 	option(LINUX_LOCAL_DEV "Enable relocatable binary" OFF)
 	if(LINUX_LOCAL_DEV)
-		add_definitions('-DLINUX_LOCAL_DEV')
-	endif(LINUX_LOCAL_DEV)
-endif(UNIX)
+		add_definitions(-DLINUX_LOCAL_DEV)
+	endif()
+endif()
 
 # BSDs put packages in /usr/local instead of /usr, so we need to
 # force CMake to look in those directories by default, too.
 # All commands and submodule commands also need to see these
 # changes, so just setting them in the project scope via
 # include_directories and link_directories is not sufficient
-if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD|NetBSD")
+if(CMAKE_SYSTEM_NAME MATCHES "FreeBSD|NetBSD")
 	set(CMAKE_PREFIX_PATH "${CMAKE_PREFIX_PATH};/usr/local")
 	set(CMAKE_REQUIRED_INCLUDES "/usr/local/include")
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/local/lib")
@@ -339,23 +333,16 @@ find_package(Threads)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "Release" CACHE STRING
-		"Build type (Release/Debug/RelWithDebInfo/MinSizeRe)" FORCE)
-endif(NOT CMAKE_BUILD_TYPE)
+		"Build type (Release/Debug/RelWithDebInfo/MinSizeRel)" FORCE)
+endif()
 
-
-if(CMAKE_BUILD_TYPE STREQUAL Debug)
-	add_definitions(-D_DEBUG -ggdb)
-	set(wxWidgets_USE_DEBUG ON CACHE BOOL "Use wxWidgets Debugging")
-
-	option(ENABLE_GPROF "Enable gprof profiling (must be using Debug build)" OFF)
-	if(ENABLE_GPROF)
-		add_definitions(-pg)
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+option(ENABLE_GPROF "Enable gprof profiling (must be using Debug build)" OFF)
+if(ENABLE_GPROF)
+	check_and_add_flag(HAVE_PG -pg)
+	if(NOT FLAG_C_HAVE_PG)
+		message(FATAL_ERROR "Compiler option -pg is not supported")
 	endif()
-endif(CMAKE_BUILD_TYPE STREQUAL Debug)
-
-if(CMAKE_BUILD_TYPE STREQUAL Release AND NOT APPLE)
-	add_definitions(-fomit-frame-pointer)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 endif()
 
 if(FASTLOG)
@@ -364,7 +351,7 @@ endif()
 
 if(GDBSTUB)
 	add_definitions(-DUSE_GDBSTUB)
-endif(GDBSTUB)
+endif()
 
 if(VTUNE)
 	if(EXISTS "$ENV{VTUNE_AMPLIFIER_XE_2015_DIR}")
@@ -380,7 +367,7 @@ if(VTUNE)
 		"${VTUNE_DIR}/lib64/libjitprofiling.a"
 		"${VTUNE_DIR}/lib64/libittnotify.a"
 	)
-endif(VTUNE)
+endif()
 
 if(ANDROID)
 	message(STATUS "Building for Android")
@@ -415,7 +402,15 @@ if(ENABLE_HEADLESS)
 	add_definitions(-DUSE_HEADLESS)
 endif()
 
-add_definitions(-D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE)
+# Set file offset size to 64 bits.
+#
+# On modern Unixes, this is typically already the case. The lone exception is
+# glibc, which may default to 32 bits. glibc allows this to be configured
+# by setting _FILE_OFFSET_BITS.
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Windows")
+	add_definitions(-D_FILE_OFFSET_BITS=64)
+	add_definitions(-D_LARGEFILE_SOURCE)
+endif()
 
 ########################################
 # Dependency checking
@@ -524,7 +519,7 @@ if(UNIX AND NOT APPLE AND NOT ANDROID AND NOT ENABLE_HEADLESS)
 		SET(X11_FOUND "")
 		message(STATUS "X11 support disabled")
 		add_definitions(-DHAVE_X11=0)
-	endif(TRY_X11 AND X11_FOUND)
+	endif()
 
 	if (NOT USE_X11)
 		message(FATAL_ERROR "\n"
@@ -539,7 +534,7 @@ if(USE_X11)
 		add_definitions(-DHAVE_XRANDR=1)
 	else()
 		add_definitions(-DHAVE_XRANDR=0)
-	endif(XRANDR_FOUND)
+	endif()
 
 	pkg_check_modules(X11_INPUT REQUIRED xi>=1.5.0)
 endif()
@@ -569,6 +564,9 @@ if(NOT ANDROID)
 		set(PORTAUDIO_LIBRARIES portaudio)
 	else()
 		message(STATUS "Using static PortAudio from Externals for mic support")
+		option(PA_USE_ASIO "Enable PortAudio support for ASIO" OFF)
+		option(PA_USE_DS "Enable PortAudio support for DirectSound" OFF)
+		option(PA_USE_WDMKS "Enable PortAudio support for WDMKS" OFF)
 		add_subdirectory(Externals/portaudio)
 		set(PORTAUDIO_LIBRARIES portaudio_static)
 	endif()
@@ -677,11 +675,11 @@ find_package(ZLIB)
 if(ZLIB_FOUND)
 	message(STATUS "Using shared zlib")
 	include_directories(${ZLIB_INCLUDE_DIRS})
-else(ZLIB_FOUND)
+else()
 	message(STATUS "Shared zlib not found, falling back to the static library")
 	add_subdirectory(Externals/zlib)
 	include_directories(Externals/zlib)
-endif(ZLIB_FOUND)
+endif()
 
 if(NOT APPLE)
 	check_lib(LZO "(no .pc for lzo2)" lzo2 lzo/lzo1x.h QUIET)
@@ -727,17 +725,17 @@ if(ENABLE_SDL)
 		message(STATUS "Using shared SDL2")
 		add_definitions(-DHAVE_SDL=1)
 		include_directories(${SDL2_INCLUDE_DIR})
-	else(SDL2_FOUND)
+	else()
 		# SDL2 not found, try SDL
 		find_package(SDL OPTIONAL)
 		if(SDL_FOUND)
 			message(STATUS "Using shared SDL")
 			add_definitions(-DHAVE_SDL=1)
 			include_directories(${SDL_INCLUDE_DIR})
-		else(SDL_FOUND)
+		else()
 			message(STATUS "SDL NOT found, disabling SDL input")
-		endif(SDL_FOUND)
-	endif(SDL2_FOUND)
+		endif()
+	endif()
 endif()
 
 if(NOT ANDROID)
@@ -874,11 +872,6 @@ if (OPENSLES_LIBRARIES AND OPENSLES_INCLUDE_DIR)
 	message(STATUS "OpenSLES found, enabling OpenSLES sound backend")
 endif()
 
-if(ENABLE_QT2)
-	find_package(Qt5Widgets REQUIRED)
-	message(STATUS "Found Qt version ${Qt5Core_VERSION}, enabling the Qt backend")
-endif()
-
 if(NOT DISABLE_WX)
 	find_package(wxWidgets COMPONENTS core aui adv)
 
@@ -900,7 +893,7 @@ if(NOT DISABLE_WX)
 			message(STATUS "At least ${wxMIN_VERSION} is required; ignoring found version")
 			unset(wxWidgets_FOUND)
 		endif()
-	endif(wxWidgets_FOUND)
+	endif()
 
 	if(UNIX AND NOT APPLE)
 		# There is a bug in the FindGTK module in cmake version 2.8.2 that
@@ -929,7 +922,7 @@ if(NOT DISABLE_WX)
 	if(wxWidgets_FOUND)
 		include(${wxWidgets_USE_FILE})
 		message(STATUS "wxWidgets found, enabling GUI build")
-	else(wxWidgets_FOUND)
+	else()
 		message(STATUS "Using static wxWidgets from Externals")
 
 		# These definitions and includes are used when building dolphin against wx,
@@ -957,8 +950,8 @@ if(NOT DISABLE_WX)
 		add_subdirectory(Externals/wxWidgets3)
 		set(wxWidgets_FOUND TRUE)
 		set(wxWidgets_LIBRARIES "wx")
-	endif(wxWidgets_FOUND)
-endif(NOT DISABLE_WX)
+	endif()
+endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD|NetBSD")
 	set(LIBS ${LIBS} usbhid)
@@ -1005,9 +998,6 @@ add_subdirectory(Source)
 ########################################
 # Install shared data files
 #
-if(NOT APPLE)
-	install(DIRECTORY Data/Sys/ DESTINATION ${datadir}/sys PATTERN)
-endif()
 if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD|OpenBSD|Darwin")
 	install(FILES Data/license.txt DESTINATION ${datadir})
 endif()

@@ -1,4 +1,4 @@
-set(LIBS core gtest)
+set(LIBS core gtest_main)
 if(APPLE)
 	list(APPEND LIBS ${FOUNDATION_LIBRARY} ${CORESERV_LIBRARY})
 endif()
@@ -17,7 +17,7 @@ macro(add_dolphin_test target srcs)
 	target_link_libraries(Test_${target} ${LIBS})
 	add_dependencies(unittests Test_${target})
 	add_test(NAME ${target} COMMAND ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/Tests/${target})
-endmacro(add_dolphin_test)
+endmacro()
 
 add_subdirectory(TestUtils)
 

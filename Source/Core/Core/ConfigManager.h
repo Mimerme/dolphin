@@ -106,6 +106,7 @@ struct SConfig : NonCopyable
 
   bool bMMU = false;
   bool bDCBZOFF = false;
+  bool bLowDCBZHack = false;
   int iBBDumpPort = 0;
   bool bFastDiscSpeed = false;
 
@@ -364,6 +365,8 @@ private:
   void LoadAnalyticsSettings(IniFile& ini);
   void LoadBluetoothPassthroughSettings(IniFile& ini);
   void LoadSysconfSettings(IniFile& ini);
+
+  bool SetRegion(DiscIO::Region region, std::string* directory_name);
 
   static SConfig* m_Instance;
 };

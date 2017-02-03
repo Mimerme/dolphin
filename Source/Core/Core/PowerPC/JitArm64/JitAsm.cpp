@@ -28,6 +28,14 @@ void JitArm64::GenerateAsm()
 
   MOVP2R(PPC_REG, &PowerPC::ppcState);
 
+  // Store the stack pointer, so we can reset it if the BLR optimization fails.
+  ADD(X0, SP, 0);
+  STR(INDEX_UNSIGNED, X0, PPC_REG, PPCSTATE_OFF(stored_stack_pointer));
+
+  // Push {nullptr; -1} as invalid destination on the stack.
+  MOVI2R(X0, 0xFFFFFFFF);
+  STP(INDEX_PRE, ZR, X0, SP, -16);
+
   // The PC will be loaded into DISPATCHER_PC after the call to CoreTiming::Advance().
   // Advance() does an exception check so we don't know what PC to use until afterwards.
   FixupBranch to_start_of_timing_slice = B();
@@ -106,17 +114,25 @@ void JitArm64::GenerateAsm()
   MOVP2R(X30, reinterpret_cast<void*>(&JitBase::Dispatch));
   BLR(X30);
 
-  // set the mem_base based on MSR flags
+  FixupBranch no_block_available = CBZ(X0);
+
+  // set the mem_base based on MSR flags and jump to next block.
   LDR(INDEX_UNSIGNED, ARM64Reg::W28, PPC_REG, PPCSTATE_OFF(msr));
   FixupBranch physmem = TBNZ(ARM64Reg::W28, 31 - 27);
   MOVP2R(MEM_REG, Memory::physical_base);
-  FixupBranch membaseend = B();
+  BR(X0);
   SetJumpTarget(physmem);
   MOVP2R(MEM_REG, Memory::logical_base);
-  SetJumpTarget(membaseend);
-
-  // Jump to next block.
   BR(X0);
+
+  // Call JIT
+  SetJumpTarget(no_block_available);
+  ResetStack();
+  MOV(W0, DISPATCHER_PC);
+  MOVP2R(X30, reinterpret_cast<void*>(&JitTrampoline));
+  BLR(X30);
+  LDR(INDEX_UNSIGNED, DISPATCHER_PC, PPC_REG, PPCSTATE_OFF(pc));
+  B(dispatcherNoCheck);
 
   SetJumpTarget(bail);
   doTiming = GetCodePtr();
@@ -143,6 +159,11 @@ void JitArm64::GenerateAsm()
   B(dispatcherNoCheck);
 
   SetJumpTarget(Exit);
+
+  // Reset the stack pointer, as the BLR optimization have touched it.
+  LDR(INDEX_UNSIGNED, X0, PPC_REG, PPCSTATE_OFF(stored_stack_pointer));
+  ADD(SP, X0, 0);
+
   ABI_PopRegisters(regs_to_save);
   RET(X30);
 

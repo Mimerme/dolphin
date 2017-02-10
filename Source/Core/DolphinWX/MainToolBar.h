@@ -47,6 +47,7 @@ private:
     TOOLBAR_CONFIGMAIN,
     TOOLBAR_CONFIGGFX,
     TOOLBAR_CONTROLLER,
+	ADD_TOOLBAR_ITEM_BITMAP
   };
 
   void BindEvents();

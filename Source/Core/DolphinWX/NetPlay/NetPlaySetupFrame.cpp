@@ -318,6 +318,7 @@ NetPlaySetupFrame::~NetPlaySetupFrame()
 
 void NetPlaySetupFrame::OnHost(wxCommandEvent&)
 {
+  LOG("Hosting Game")
   DoHost();
 }
 
@@ -369,6 +370,7 @@ void NetPlaySetupFrame::DoHost()
 
 void NetPlaySetupFrame::OnJoin(wxCommandEvent&)
 {
+  LOG("Joining Game")
   DoJoin();
 }
 

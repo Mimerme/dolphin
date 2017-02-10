@@ -11,6 +11,7 @@
 #include "DolphinWX/Globals.h"
 #include "DolphinWX/WxEventUtils.h"
 #include "DolphinWX/WxUtils.h"
+#include "DolphinWX/Patches.cpp"
 
 wxDEFINE_EVENT(DOLPHIN_EVT_RELOAD_TOOLBAR_BITMAPS, wxCommandEvent);
 
@@ -187,6 +188,7 @@ void MainToolBar::AddMainToolBarButtons()
                    _("Graphics settings"));
   AddToolBarButton(IDM_CONFIG_CONTROLLERS, TOOLBAR_CONTROLLER, _("Controllers"),
                    _("Controller settings"));
+  ADD_TOOLBAR_ITEM
 }
 
 void MainToolBar::AddDebuggerToolBarButtons()

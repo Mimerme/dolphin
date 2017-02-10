@@ -28,6 +28,8 @@
 #include "VideoCommon/OnScreenDisplay.h"
 #include "VideoCommon/VideoConfig.h"
 #include "DolphinWX/Patches.cpp"
+#include "wx/log.h"
+#include "DolphinWX/MeleeNET.h"
 
 static std::mutex crit_netplay_client;
 static NetPlayClient* netplay_client = nullptr;
@@ -123,7 +125,7 @@ NetPlayClient::NetPlayClient(const std::string& address, const u16 port, NetPlay
       return;
     m_client = g_MainNetHost.get();
 
-    m_traversal_client = g_TraversalClient.get();
+	m_traversal_client = g_TraversalClient.get();
 
     // If we were disconnected in the background, reconnect.
     if (m_traversal_client->m_State == TraversalClient::Failure)
@@ -153,6 +155,7 @@ NetPlayClient::NetPlayClient(const std::string& address, const u16 port, NetPlay
           if (Connect())
           {
             m_connection_state = ConnectionState::Connected;
+			LOG("Connected!");
             m_thread = std::thread(&NetPlayClient::ThreadFunc, this);
           }
           return;
@@ -171,7 +174,8 @@ bool NetPlayClient::Connect()
 {
   // send connect message
   sf::Packet spac;
-  spac << scm_rev_git_str;
+  NETPLAY_SET_VERSION
+  //spac << scm_rev_git_str;
   spac << netplay_dolphin_ver;
   spac << m_player_name;
   Send(spac);
@@ -914,6 +918,7 @@ void NetPlayClient::OnConnectReady(ENetAddress addr)
   if (m_connection_state == ConnectionState::WaitingForTraversalClientConnectReady)
   {
     m_connection_state = ConnectionState::Connecting;
+	LOG("Netplay Connecting");
     enet_host_connect(m_client, &addr, 0, 0);
   }
 }
@@ -921,20 +926,25 @@ void NetPlayClient::OnConnectReady(ENetAddress addr)
 // called from ---NETPLAY--- thread
 void NetPlayClient::OnConnectFailed(u8 reason)
 {
+  LOG("Connection Failed");
   m_connecting = false;
   m_connection_state = ConnectionState::Failure;
   switch (reason)
   {
   case TraversalConnectFailedClientDidntRespond:
+	LOG("Netplay Timeout");
     PanicAlertT("Traversal server timed out connecting to the host");
     break;
   case TraversalConnectFailedClientFailure:
+	LOG("Server Reject");
     PanicAlertT("Server rejected traversal attempt");
     break;
   case TraversalConnectFailedNoSuchClient:
+	LOG("No Such Client");
     PanicAlertT("Invalid host");
     break;
   default:
+	LOG("Unknown error");
     PanicAlertT("Unknown error %x", reason);
     break;
   }

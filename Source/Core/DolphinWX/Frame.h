@@ -325,6 +325,9 @@ private:
   void OnSaveCurrentSlot(wxCommandEvent& event);
   void OnLoadCurrentSlot(wxCommandEvent& event);
 
+  void OnLogin(wxCommandEvent& event);
+
+
   void PollHotkeys(wxTimerEvent&);
   void ParseHotkeys();
   void HandleSignal(wxTimerEvent&);

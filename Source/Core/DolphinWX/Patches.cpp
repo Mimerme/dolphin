@@ -38,6 +38,17 @@ bool MeleeNET::m_netplay_host = false;
 
 #define GAME_WINDOW_TITLE std::string titleStr = StringFromFormat("%s | %s", "SmashLadder Custom Dolphin", str.c_str());
 
+#define ADD_TOOLBAR_ITEM  AddToolBarButton(IDM_CONFIG_CONTROLLERS, TOOLBAR_CONTROLLER, _("Connect Account"), _("Connect your Dolphin to Anther's Smashladder"));
+#define ADD_TOOLBAR_ITEM_BITMAP  TOOLBAR_LOGIN,
+#define BIND_TOOLBAR_ITEM Bind(wxEVT_MENU, &CFrame::OnLogin, this, IDM_CONFIG_CONTROLLERS);
+#define TOOLBAR_ITEM_FUNCTION void CFrame::OnLogin(wxCommandEvent& WXUNUSED(event)) {MeleeNET::onLogin();}
+
+#define SETUP_LOGGER wxLog* logger = new wxLogStream(&std::cout);\
+wxLog::SetActiveTarget(logger);\
+
+#define LOG(message) wxLogMessage(message);
+
+#define NETPLAY_SET_VERSION spac << MeleeNET::m_netplay_client_string;
 
 /*
 //#Usage NetPlayClient.h

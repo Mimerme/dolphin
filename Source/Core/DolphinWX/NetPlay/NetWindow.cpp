@@ -782,7 +782,7 @@ void NetPlayDialog::UpdateHostLabel()
     case TraversalClient::Connected:
       m_host_label->SetForegroundColour(*wxBLACK);
       m_host_label->SetLabel(
-          wxString(g_TraversalClient->m_HostId.data(), g_TraversalClient->m_HostId.size()));
+      wxString(g_TraversalClient->m_HostId.data(), g_TraversalClient->m_HostId.size()));
       m_host_copy_btn->SetLabel(_("Copy"));
       m_host_copy_btn->Enable();
       m_host_copy_btn_is_retry = false;

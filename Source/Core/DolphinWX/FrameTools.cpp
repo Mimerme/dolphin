@@ -83,6 +83,7 @@
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoConfig.h"
+#include "DolphinWX/MeleeNET.h"
 
 class InputConfig;
 class wxFrame;
@@ -183,6 +184,8 @@ void CFrame::BindMenuBarEvents()
   Bind(wxEVT_MENU, &CFrame::OnHelp, this, IDM_HELP_ONLINE_DOCS);
   Bind(wxEVT_MENU, &CFrame::OnHelp, this, IDM_HELP_GITHUB);
   Bind(wxEVT_MENU, &CFrame::OnHelp, this, wxID_ABOUT);
+
+  BIND_TOOLBAR_ITEM
 
   if (UseDebugger)
     BindDebuggerMenuBarEvents();
@@ -747,6 +750,8 @@ void CFrame::OnScreenshot(wxCommandEvent& WXUNUSED(event))
 {
   Core::SaveScreenShot();
 }
+
+TOOLBAR_ITEM_FUNCTION
 
 // Pause the emulation
 void CFrame::DoPause()

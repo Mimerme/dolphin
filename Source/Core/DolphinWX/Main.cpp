@@ -83,7 +83,7 @@ bool DolphinApp::Initialize(int& c, wxChar** v)
 
 bool DolphinApp::OnInit()
 {
-
+  SETUP_LOGGER
   std::lock_guard<std::mutex> lk(s_init_mutex);
   if (!wxApp::OnInit())
     return false;
@@ -135,7 +135,6 @@ bool DolphinApp::OnInit()
   SetTopWindow(main_frame);
 
   AfterInit();
-
   return true;
 }
 
@@ -232,6 +231,7 @@ void DolphinApp::AfterInit()
     SConfig::GetInstance().SaveSettings();
 
     DolphinAnalytics::Instance()->ReloadConfig();
+	LOG("Dolphin Launched")
   }
 
   if (m_confirm_stop)

@@ -131,8 +131,8 @@ bool DolphinApp::OnInit()
   main_frame = new CFrame(nullptr, wxID_ANY, StrToWxStr(scm_rev_str), window_geometry,
 	  m_use_debugger, m_batch_mode, m_use_logger);
 	
-	  
-  SetTopWindow(main_frame);
+  //main_frame->SetWindowStyleFlag(main_frame->GetWindowStyleFlag() ^ wxFRAME_NO_TASKBAR);
+  //SetTopWindow(main_frame);
 
   AfterInit();
   return true;
@@ -270,7 +270,6 @@ void DolphinApp::AfterInit()
       main_frame->BootGame("");
     }
   }
-  AFTER_INIT
 }
 
 void DolphinApp::OnActivate(wxActivateEvent& ev)
@@ -355,6 +354,10 @@ void DolphinApp::OnFatalException()
 
 void DolphinApp::OnIdle(wxIdleEvent& ev)
 {
+  if (MeleeNET::initalized) {
+	AFTER_INIT
+	MeleeNET::initalized = false;
+  }
   ev.Skip();
   Core::HostDispatchJobs();
 }

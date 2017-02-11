@@ -9,6 +9,7 @@ wxString MeleeNET::m_netplay_code = wxString("");
 bool MeleeNET::m_netplay = false;
 bool MeleeNET::m_netplay_host = false;
 std::string MeleeNET::m_netplay_client_string = "SmashLadder Dolphin";
+bool MeleeNET::initalized = true;
 
 void MeleeNET::onLogin() {
 	std::string g_OldServer = "stun.dolphin - emu.org";

@@ -13,7 +13,7 @@
 #define BUILD_TYPE_STR ""
 #endif
 
-/*
+
 const std::string scm_rev_str = "Dolphin "
 #if !SCM_IS_MASTER
                                 "[" SCM_BRANCH_STR "] "
@@ -24,19 +24,19 @@ const std::string scm_rev_str = "Dolphin "
 #else
     BUILD_TYPE_STR SCM_DESC_STR;
 #endif
-*/
 
-const std::string scm_rev_str = "SmashLadder Custom Dolphin";
+#define DOLHPIN_VERSION "SmashLadder"
 
 #ifdef _WIN32
-const std::string netplay_dolphin_ver = SCM_DESC_STR " Win";
+const std::string netplay_dolphin_ver = DOLHPIN_VERSION " Win";
 #elif __APPLE__
-const std::string netplay_dolphin_ver = SCM_DESC_STR " Mac";
+const std::string netplay_dolphin_ver = DOLHPIN_VERSION " Mac";
 #else
-    const std::string netplay_dolphin_ver = SCM_DESC_STR " Lin";
+    const std::string netplay_dolphin_ver = DOLHPIN_VERSION " Lin";
 #endif
 
-const std::string scm_rev_git_str = SCM_REV_STR;
+const std::string scm_rev_git_str = "WildCard";
+//const std::string scm_rev_git_str = SCM_REV_STR;
 
 const std::string scm_desc_str = SCM_DESC_STR;
 const std::string scm_branch_str = SCM_BRANCH_STR;

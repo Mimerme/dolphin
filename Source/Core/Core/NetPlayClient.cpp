@@ -174,8 +174,7 @@ bool NetPlayClient::Connect()
 {
   // send connect message
   sf::Packet spac;
-  NETPLAY_SET_VERSION
-  //spac << scm_rev_git_str;
+  spac << scm_rev_git_str;
   spac << netplay_dolphin_ver;
   spac << m_player_name;
   Send(spac);

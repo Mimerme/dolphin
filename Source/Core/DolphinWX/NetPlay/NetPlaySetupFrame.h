@@ -22,6 +22,7 @@ class NetPlaySetupFrame final : public wxFrame
 public:
   NetPlaySetupFrame(wxWindow* const parent, const CGameListCtrl* const game_list);
   ONJOIN_PUBLIC
+  ONHOST_PUBLIC
   ~NetPlaySetupFrame();
 
 private:
@@ -37,8 +38,9 @@ private:
   #ifndef ONJOIN_PUBLIC
   void OnJoin(wxCommandEvent& event);
   #endif
-
+  #ifndef ONHOST_PUBLIC
   void OnHost(wxCommandEvent& event);
+  #endif
   void DoJoin();
   void DoHost();
   void OnQuit(wxCommandEvent& event);

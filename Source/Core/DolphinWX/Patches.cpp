@@ -8,19 +8,25 @@
 
 //#Usage : Main.cpp
 //Auto connect to netplay
-#define ADD_PARSER MeleeNET::m_netplay = parser.Found("netplay", &MeleeNET::m_netplay_code);
+#define ADD_PARSER MeleeNET::m_netplay = parser.Found("netplay", &MeleeNET::m_netplay_code); if (MeleeNET::m_netplay_code.Contains("host")) {MeleeNET::m_netplay_host = true;}
 
 
 //#Usage FrameTools.cpp
-//Makes OnNetplaayAccessable publicly
+//Makes OnNetplay Accessable publicly
 #define ONNETPLAY_PUBLIC void OnNetPlay(wxCommandEvent& event);
 
 #define ONJOIN_PUBLIC void OnJoin(wxCommandEvent& event);
 
+#define ONHOST_PUBLIC void OnHost(wxCommandEvent& event);
+
+
 //#Usage Main.cpp
 //Called after main window initalization
-#define AFTER_INIT if(MeleeNET::m_netplay) {\
-wxGetApp().GetCFrame()->OnNetPlay(wxCommandEvent());wxGetApp().GetCFrame()->g_NetPlaySetupDiag->OnJoin(wxCommandEvent());}
+#define AFTER_INIT if(MeleeNET::m_netplay && !MeleeNET::m_netplay_host) {\
+wxGetApp().GetCFrame()->OnNetPlay(wxCommandEvent());wxGetApp().GetCFrame()->g_NetPlaySetupDiag->OnJoin(wxCommandEvent());}\
+if (MeleeNET::m_netplay && MeleeNET::m_netplay_host) {\
+wxGetApp().GetCFrame()->OnNetPlay(wxCommandEvent());\
+wxGetApp().GetCFrame()->g_NetPlaySetupDiag->OnHost(wxCommandEvent());}
 
 #define IF_NETPLAY if (MeleeNET::m_netplay) {\
 join_config.use_traversal = true;\
@@ -49,6 +55,12 @@ wxLog::SetActiveTarget(logger);\
 #define LOG(message) wxLogMessage(message);
 
 #define NETPLAY_SET_VERSION spac << MeleeNET::m_netplay_client_string;
+
+#define HOST_SET_GAME host_config.game_name = "SUPER SMASH BROS. Melee (GALE01, Revision 2)";\
+host_config.use_traversal = true;\
+host_config.player_name = "HostTest";\
+host_config.game_list_ctrl = m_game_list;\
+host_config.SetDialogInfo(netplay_section, m_parent);\
 
 /*
 //#Usage NetPlayClient.h

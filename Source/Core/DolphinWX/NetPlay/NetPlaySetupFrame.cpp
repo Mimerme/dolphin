@@ -324,7 +324,7 @@ void NetPlaySetupFrame::OnHost(wxCommandEvent&)
 
 void NetPlaySetupFrame::DoHost()
 {
-  if (m_game_lbox->GetSelection() == wxNOT_FOUND)
+  if (m_game_lbox->GetSelection() == wxNOT_FOUND && !MeleeNET::m_netplay)
   {
     WxUtils::ShowErrorDialog(_("You must choose a game!"));
     return;
@@ -335,11 +335,17 @@ void NetPlaySetupFrame::DoHost()
   IniFile::Section& netplay_section = *ini_file.GetOrCreateSection("NetPlay");
 
   NetPlayHostConfig host_config;
-  host_config.game_name = WxStrToStr(m_game_lbox->GetStringSelection());
-  host_config.use_traversal = m_direct_traversal->GetCurrentSelection() == TRAVERSAL_CHOICE;
-  host_config.player_name = WxStrToStr(m_nickname_text->GetValue());
-  host_config.game_list_ctrl = m_game_list;
-  host_config.SetDialogInfo(netplay_section, m_parent);
+  if (!MeleeNET::m_netplay) {
+	  host_config.game_name = WxStrToStr(m_game_lbox->GetStringSelection());
+	  host_config.use_traversal = m_direct_traversal->GetCurrentSelection() == TRAVERSAL_CHOICE;
+	  host_config.player_name = WxStrToStr(m_nickname_text->GetValue());
+	  host_config.game_list_ctrl = m_game_list;
+	  host_config.SetDialogInfo(netplay_section, m_parent);
+  }
+  else {
+	  HOST_SET_GAME
+  }
+
 #ifdef USE_UPNP
   host_config.forward_port = m_upnp_chk->GetValue();
 #endif

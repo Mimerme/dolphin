@@ -4,6 +4,8 @@
 #include "Common/Logging/Log.h"
 #include "Common/MsgHandler.h"
 #include "Common/Timer.h"
+#include "DolphinWX/Patches.cpp"
+#include <wx/log.h>
 
 static void GetRandomishBytes(u8* buf, size_t size)
 {
@@ -135,18 +137,21 @@ void TraversalClient::HandleServerPacket(TraversalPacket* packet)
       }
     }
     break;
-  case TraversalPacketHelloFromServer:
-    if (m_State != Connecting)
-      break;
-    if (!packet->helloFromServer.ok)
-    {
-      OnFailure(VersionTooOld);
-      break;
-    }
-    m_HostId = packet->helloFromServer.yourHostId;
-    m_State = Connected;
-    if (m_Client)
-      m_Client->OnTraversalStateChanged();
+  case TraversalPacketHelloFromServer:{
+	  if (m_State != Connecting)
+		break;
+	  if (!packet->helloFromServer.ok)
+	  {
+		OnFailure(VersionTooOld);
+		break;
+	  }
+	  m_HostId = packet->helloFromServer.yourHostId;
+	  HOST_STRING
+	  MELEENET_LOG(netplay_output.c_str());
+	  m_State = Connected;
+	  if (m_Client)
+		m_Client->OnTraversalStateChanged();
+	}
     break;
   case TraversalPacketPleaseSendPacket:
   {

@@ -52,7 +52,7 @@ bool MeleeNET::m_netplay_host = false;
 #define SETUP_LOGGER wxLog* logger = new wxLogStream(&std::cout);\
 wxLog::SetActiveTarget(logger);\
 
-#define LOG(message) wxLogMessage(message);
+#define MELEENET_LOG(message) wxLogMessage(message);
 
 #define NETPLAY_SET_VERSION spac << MeleeNET::m_netplay_client_string;
 
@@ -61,6 +61,10 @@ host_config.use_traversal = true;\
 host_config.player_name = "HostTest";\
 host_config.game_list_ctrl = m_game_list;\
 host_config.SetDialogInfo(netplay_section, m_parent);\
+
+#define HOST_STRING std::string netplay_code(std::begin(m_HostId), std::end(m_HostId));\
+std::string netplay_code_label = "Host Code ";\
+std::string netplay_output = netplay_code_label.append(netplay_code);
 
 /*
 //#Usage NetPlayClient.h

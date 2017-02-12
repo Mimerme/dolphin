@@ -231,7 +231,6 @@ void DolphinApp::AfterInit()
     SConfig::GetInstance().SaveSettings();
 
     DolphinAnalytics::Instance()->ReloadConfig();
-	LOG("Dolphin Launched")
   }
 
   if (m_confirm_stop)
@@ -356,6 +355,7 @@ void DolphinApp::OnIdle(wxIdleEvent& ev)
 {
   if (MeleeNET::initalized) {
 	AFTER_INIT
+	MELEENET_LOG("Dolphin Launched")
 	MeleeNET::initalized = false;
   }
   ev.Skip();

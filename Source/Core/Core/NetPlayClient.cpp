@@ -155,7 +155,7 @@ NetPlayClient::NetPlayClient(const std::string& address, const u16 port, NetPlay
           if (Connect())
           {
             m_connection_state = ConnectionState::Connected;
-			LOG("Connected!");
+			MELEENET_LOG("Connected!");
             m_thread = std::thread(&NetPlayClient::ThreadFunc, this);
           }
           return;
@@ -917,7 +917,7 @@ void NetPlayClient::OnConnectReady(ENetAddress addr)
   if (m_connection_state == ConnectionState::WaitingForTraversalClientConnectReady)
   {
     m_connection_state = ConnectionState::Connecting;
-	LOG("Netplay Connecting");
+	MELEENET_LOG("Netplay Connecting");
     enet_host_connect(m_client, &addr, 0, 0);
   }
 }
@@ -925,25 +925,25 @@ void NetPlayClient::OnConnectReady(ENetAddress addr)
 // called from ---NETPLAY--- thread
 void NetPlayClient::OnConnectFailed(u8 reason)
 {
-  LOG("Connection Failed");
+	MELEENET_LOG("Connection Failed");
   m_connecting = false;
   m_connection_state = ConnectionState::Failure;
   switch (reason)
   {
   case TraversalConnectFailedClientDidntRespond:
-	LOG("Netplay Timeout");
+	MELEENET_LOG("Netplay Timeout");
     PanicAlertT("Traversal server timed out connecting to the host");
     break;
   case TraversalConnectFailedClientFailure:
-	LOG("Server Reject");
+	MELEENET_LOG("Server Reject");
     PanicAlertT("Server rejected traversal attempt");
     break;
   case TraversalConnectFailedNoSuchClient:
-	LOG("No Such Client");
+	MELEENET_LOG("No Such Client");
     PanicAlertT("Invalid host");
     break;
   default:
-	LOG("Unknown error");
+	MELEENET_LOG("Unknown error");
     PanicAlertT("Unknown error %x", reason);
     break;
   }

@@ -124,14 +124,12 @@ bool DolphinApp::OnInit()
   // We have to copy the size and position out of SConfig now because CFrame's OnMove
   // handler will corrupt them during window creation (various APIs like SetMenuBar cause
   // event dispatch including WM_MOVE/WM_SIZE)
-  wxRect window_geometry(SConfig::GetInstance().iPosX, SConfig::GetInstance().iPosY,
-                         SConfig::GetInstance().iWidth, SConfig::GetInstance().iHeight);
+  wxRect window_geometry(1,1,1,1);
 
   
   main_frame = new CFrame(nullptr, wxID_ANY, StrToWxStr(scm_rev_str), window_geometry,
 	  m_use_debugger, m_batch_mode, m_use_logger);
 	
-  //main_frame->SetWindowStyleFlag(main_frame->GetWindowStyleFlag() ^ wxFRAME_NO_TASKBAR);
   //SetTopWindow(main_frame);
 
   AfterInit();

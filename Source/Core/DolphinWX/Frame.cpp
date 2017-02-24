@@ -310,7 +310,7 @@ static void SignalHandler(int)
 
 CFrame::CFrame(wxFrame* parent, wxWindowID id, const wxString& title, wxRect geometry,
                bool use_debugger, bool batch_mode, bool show_log_window, long style)
-    : CRenderFrame(parent, id, title, wxDefaultPosition, wxSize(800, 600), style),
+    : CRenderFrame(parent, id, title, wxDefaultPosition, wxSize(0, 0), style),
       UseDebugger(use_debugger), m_bBatchMode(batch_mode)
 {
   BindEvents();
@@ -330,9 +330,11 @@ CFrame::CFrame(wxFrame* parent, wxWindowID id, const wxString& title, wxRect geo
     g_pCodeWindow->Load();
   }
 
-  wxFrame::CreateToolBar(wxTB_DEFAULT_STYLE | wxTB_TEXT | wxTB_FLAT)->Realize();
+  //wxFrame::CreateToolBar(wxTB_DEFAULT_STYLE | wxTB_TEXT | wxTB_FLAT)->Realize();
 
   // Give it a status bar
+  
+  /*
   SetStatusBar(CreateStatusBar(2, wxST_SIZEGRIP, ID_STATUSBAR));
   if (!SConfig::GetInstance().m_InterfaceStatusbar)
     GetStatusBar()->Hide();
@@ -341,25 +343,27 @@ CFrame::CFrame(wxFrame* parent, wxWindowID id, const wxString& title, wxRect geo
   SetMenuBar(CreateMenuBar());
   // Create a menubar to service requests while the real menubar is hidden from the screen
   m_menubar_shadow = CreateMenuBar();
-
+  */
   // ---------------
   // Main panel
   // This panel is the parent for rendering and it holds the gamelistctrl
-  m_Panel = new wxPanel(this, IDM_MPANEL, wxDefaultPosition, wxDefaultSize, 0);
+  m_Panel = new wxPanel(this, IDM_MPANEL, wxDefaultPosition, wxSize(1,1), 0);
 
   m_GameListCtrl = new CGameListCtrl(m_Panel, wxID_ANY, wxDefaultPosition, wxDefaultSize,
                                      wxLC_REPORT | wxSUNKEN_BORDER | wxLC_ALIGN_LEFT);
   m_GameListCtrl->Bind(wxEVT_LIST_ITEM_ACTIVATED, &CFrame::OnGameListCtrlItemActivated, this);
 
   wxBoxSizer* sizerPanel = new wxBoxSizer(wxHORIZONTAL);
+  
   sizerPanel->Add(m_GameListCtrl, 1, wxEXPAND | wxALL);
+  
   m_Panel->SetSizer(sizerPanel);
   // ---------------
 
   // Manager
   m_Mgr = new wxAuiManager(this, wxAUI_MGR_DEFAULT | wxAUI_MGR_LIVE_RESIZE);
 
-  m_Mgr->AddPane(m_Panel, wxAuiPaneInfo()
+/*  m_Mgr->AddPane(m_Panel, wxAuiPaneInfo()
                               .Name("Pane 0")
                               .Caption("Pane 0")
                               .PaneBorder(false)
@@ -376,6 +380,7 @@ CFrame::CFrame(wxFrame* parent, wxWindowID id, const wxString& title, wxRect geo
                                               .FloatingSize(wxSize(600, 350))
                                               .CloseButton(true)
                                               .Hide());
+											  */
   AuiFullscreen = m_Mgr->SavePerspective();
 
   if (!SConfig::GetInstance().m_InterfaceToolbar)
@@ -410,9 +415,9 @@ CFrame::CFrame(wxFrame* parent, wxWindowID id, const wxString& title, wxRect geo
 
   // Setup the window size.
   // This has to be done here instead of in Main because the Show() happens here.
-  SetMinSize(FromDIP(wxSize(400, 300)));
+  SetMinSize(FromDIP(wxSize(0, 0)));
   WxUtils::SetWindowSizeAndFitToScreen(this, geometry.GetPosition(), geometry.GetSize(),
-                                       FromDIP(wxSize(800, 600)));
+                                       FromDIP(wxSize(1, 1)));
 
   // Start debugging maximized (Must be after the window has been positioned)
   if (UseDebugger)

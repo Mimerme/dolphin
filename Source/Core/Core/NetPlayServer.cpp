@@ -18,6 +18,8 @@
 #include "Core/HW/Sram.h"
 #include "Core/NetPlayClient.h"  //for NetPlayUI
 #include "InputCommon/GCPadStatus.h"
+#include "DolphinWX/MeleeNET.h"
+
 #if !defined(_WIN32)
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -279,6 +281,8 @@ unsigned int NetPlayServer::OnConnect(ENetPeer* socket)
   spac << (MessageId)NP_MSG_PLAYER_JOIN;
   spac << player.pid << player.name << player.revision;
   SendToClients(spac);
+
+  MeleeNET::playerJoinServer(player.name);
 
   // send new client success message with their id
   spac.clear();

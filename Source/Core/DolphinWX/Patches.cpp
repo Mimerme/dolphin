@@ -4,11 +4,32 @@
 //#Usage : Main.cpp
 //Adds 'netplay' argument to dolphin
 #define ADD_ARGUMENT { wxCMD_LINE_OPTION, "n", "netplay", "Starts/Joins a netplay server", wxCMD_LINE_VAL_STRING,\
-	wxCMD_LINE_PARAM_OPTIONAL },
+	wxCMD_LINE_PARAM_OPTIONAL }, { wxCMD_LINE_SWITCH, "s", "spectator", "Enable or disable spectators for the lobby", wxCMD_LINE_VAL_NONE,\
+wxCMD_LINE_PARAM_OPTIONAL }, { wxCMD_LINE_OPTION, "players", "playercount", "Expected number of players before the game starts (Host Only)", wxCMD_LINE_VAL_NUMBER,\
+wxCMD_LINE_PARAM_OPTIONAL },\
+{ wxCMD_LINE_OPTION, "player1","player1", "Player 2 expected name (Host Only)", wxCMD_LINE_VAL_STRING,\
+wxCMD_LINE_PARAM_OPTIONAL },\
+{ wxCMD_LINE_OPTION, "player2", "player2", "Player 3 expected name (Host Only)", wxCMD_LINE_VAL_STRING,\
+wxCMD_LINE_PARAM_OPTIONAL },\
+{ wxCMD_LINE_OPTION, "player3", "player3", "Player 4 expected name (Host Only)", wxCMD_LINE_VAL_STRING,\
+wxCMD_LINE_PARAM_OPTIONAL },
 
 //#Usage : Main.cpp
 //Auto connect to netplay
-#define ADD_PARSER MeleeNET::m_netplay = parser.Found("netplay", &MeleeNET::m_netplay_code); if (MeleeNET::m_netplay_code.Contains("host")) {MeleeNET::m_netplay_host = true;}
+#define ADD_PARSER MeleeNET::m_netplay = parser.Found("netplay", &MeleeNET::m_netplay_code); if (MeleeNET::m_netplay_code.Contains("host")) {MeleeNET::m_netplay_host = true;} \
+  MeleeNET::spec = parser.Found("spectator");\
+wxString temp;\
+parser.Found("playercount", &MeleeNET::expectedPlayerCount);\
+if (parser.Found("player1", &temp)) {\
+	MeleeNET::expectedPlayerNames[0] = std::string(temp.mb_str());\
+}\
+if (parser.Found("player2", &temp)) {\
+	MeleeNET::expectedPlayerNames[1] = std::string(temp.mb_str());\
+}\
+if (parser.Found("player3", &temp)) {\
+	MeleeNET::expectedPlayerNames[1] = std::string(temp.mb_str());\
+}
+
 
 
 //#Usage FrameTools.cpp

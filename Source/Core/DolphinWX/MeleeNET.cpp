@@ -10,6 +10,10 @@ bool MeleeNET::m_netplay = false;
 bool MeleeNET::m_netplay_host = false;
 std::string MeleeNET::m_netplay_client_string = "SmashLadder Dolphin";
 bool MeleeNET::initalized = true;
+std::string MeleeNET::expectedPlayerNames[3] = {"","",""};
+int MeleeNET::currentPlayerCount = 1;
+bool MeleeNET::spec = false;
+long MeleeNET::expectedPlayerCount = 2;
 
 void MeleeNET::onLogin() {
 	std::string g_OldServer = "stun.dolphin - emu.org";
@@ -31,3 +35,17 @@ void MeleeNET::onLogin() {
 	std::string netplay_code = std::string(wxString(g_TraversalClient->m_HostId.data(), g_TraversalClient->m_HostId.size()).mb_str());
 }
 
+void MeleeNET::playerJoinServer(std::string playername) {
+	std::string *expectedNames = std::find(std::begin(MeleeNET::expectedPlayerNames), std::end(MeleeNET::expectedPlayerNames), playername);
+	if (expectedNames == std::end(MeleeNET::expectedPlayerNames)) {
+		//if name is found
+		currentPlayerCount++;
+		if (expectedPlayerCount == currentPlayerCount) {
+			//Start netplay
+		}
+	}
+	else {
+		//otherwise...
+		
+	}
+}

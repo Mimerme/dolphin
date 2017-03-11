@@ -282,7 +282,7 @@ unsigned int NetPlayServer::OnConnect(ENetPeer* socket)
   spac << player.pid << player.name << player.revision;
   SendToClients(spac);
 
-  MeleeNET::playerJoinServer(player.name);
+  MeleeNET::playerJoinServer(player.name, this);
 
   // send new client success message with their id
   spac.clear();

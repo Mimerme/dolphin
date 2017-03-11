@@ -35,13 +35,14 @@ void MeleeNET::onLogin() {
 	std::string netplay_code = std::string(wxString(g_TraversalClient->m_HostId.data(), g_TraversalClient->m_HostId.size()).mb_str());
 }
 
-void MeleeNET::playerJoinServer(std::string playername) {
+void MeleeNET::playerJoinServer(std::string playername, NetPlayServer *server) {
 	std::string *expectedNames = std::find(std::begin(MeleeNET::expectedPlayerNames), std::end(MeleeNET::expectedPlayerNames), playername);
 	if (expectedNames == std::end(MeleeNET::expectedPlayerNames)) {
 		//if name is found
 		currentPlayerCount++;
 		if (expectedPlayerCount == currentPlayerCount) {
 			//Start netplay
+			server->StartGame();
 		}
 	}
 	else {

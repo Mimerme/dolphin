@@ -1,6 +1,7 @@
 #pragma once
 #include <wx/string.h>
 #include <string>
+#include "Core\NetPlayServer.h"
 
 class MeleeNET {
 public:
@@ -16,5 +17,5 @@ public:
 	static std::string m_netplay_client_string;
 	static bool initalized;
 	static void onLogin();
-	static void playerJoinServer(std::string);
+	static void playerJoinServer(std::string, NetPlayServer *server);
 };

@@ -11,7 +11,7 @@ bool MeleeNET::m_netplay_host = false;
 std::string MeleeNET::m_netplay_client_string = "SmashLadder Dolphin";
 bool MeleeNET::initalized = true;
 std::string MeleeNET::expectedPlayerNames[3] = {"","",""};
-int MeleeNET::currentPlayerCount = 1;
+int MeleeNET::currentPlayerCount = 0;
 bool MeleeNET::spec = false;
 long MeleeNET::expectedPlayerCount = 2;
 

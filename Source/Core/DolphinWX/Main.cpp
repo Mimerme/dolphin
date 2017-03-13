@@ -190,7 +190,7 @@ bool DolphinApp::OnCmdLineParsed(wxCmdLineParser& parser)
   m_play_movie = parser.Found("movie", &m_movie_file);
   parser.Found("user", &m_user_path);
   ADD_PARSER
-
+  //parser.Found("playercount", &MeleeNET::expectedPlayerCount);
   return true;
 }
 

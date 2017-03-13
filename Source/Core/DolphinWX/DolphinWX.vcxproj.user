@@ -10,6 +10,6 @@
     <LocalDebuggerCommandArguments>/n 19191</LocalDebuggerCommandArguments>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <LocalDebuggerCommandArguments>/n host</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/players 4</LocalDebuggerCommandArguments>
   </PropertyGroup>
 </Project>

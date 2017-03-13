@@ -1386,7 +1386,7 @@ void CFrame::OnSaveCurrentSlot(wxCommandEvent& event)
 // Update the enabled/disabled status
 void CFrame::UpdateGUI()
 {
-  /*// Save status
+  // Save status
   bool Initialized = Core::IsRunning();
   bool Running = Core::GetState() == Core::CORE_RUN;
   bool Paused = Core::GetState() == Core::CORE_PAUSE;
@@ -1520,7 +1520,6 @@ void CFrame::UpdateGUI()
     else
       g_CheatsWindow->Close();
   }
-  */
 }
 
 void CFrame::UpdateGameList()

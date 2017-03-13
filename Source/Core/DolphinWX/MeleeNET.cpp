@@ -4,6 +4,7 @@
 #include "DolphinWX/NetPlay/NetPlayLauncher.h"
 #include "DolphinWX/GameListCtrl.h"
 #include "Common/FileUtil.h"
+#include "Core/ConfigManager.h"
 
 wxString MeleeNET::m_netplay_code = wxString("");
 bool MeleeNET::m_netplay = false;
@@ -41,7 +42,25 @@ void MeleeNET::playerJoinServer(std::string playername, NetPlayServer *server) {
 		//if name is found
 		currentPlayerCount++;
 		if (expectedPlayerCount == currentPlayerCount) {
+			SConfig& instance = SConfig::GetInstance();
+			NetSettings settings;
+			settings.m_CPUthread = instance.bCPUThread;
+			settings.m_CPUcore = instance.iCPUCore;
+			settings.m_EnableCheats = instance.bEnableCheats;
+			settings.m_SelectedLanguage = instance.SelectedLanguage;
+			settings.m_OverrideGCLanguage = instance.bOverrideGCLanguage;
+			settings.m_ProgressiveScan = instance.bProgressive;
+			settings.m_PAL60 = instance.bPAL60;
+			settings.m_DSPHLE = instance.bDSPHLE;
+			settings.m_DSPEnableJIT = instance.m_DSPEnableJIT;
+			settings.m_WriteToMemcard = false;
+			settings.m_OCEnable = instance.m_OCEnable;
+			settings.m_OCFactor = instance.m_OCFactor;
+			settings.m_EXIDevice[0] = instance.m_EXIDevice[0];
+			settings.m_EXIDevice[1] = instance.m_EXIDevice[1];
+
 			//Start netplay
+			server->SetNetSettings(settings);
 			server->StartGame();
 		}
 	}

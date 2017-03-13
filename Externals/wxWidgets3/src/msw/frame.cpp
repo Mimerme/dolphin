@@ -566,12 +566,12 @@ bool wxFrame::ShowFullScreen(bool show, long style)
 
 wxToolBar* wxFrame::CreateToolBar(long style, wxWindowID id, const wxString& name)
 {
-   // if ( wxFrameBase::CreateToolBar(style, id, name) )
-   // {
-    //    PositionToolBar();
-    //}
+    if ( wxFrameBase::CreateToolBar(style, id, name) )
+	{
+        PositionToolBar();
+    }
 
-    return 0;
+    return m_frameToolBar;
 }
 
 void wxFrame::PositionToolBar()

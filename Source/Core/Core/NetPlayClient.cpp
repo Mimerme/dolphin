@@ -155,7 +155,7 @@ NetPlayClient::NetPlayClient(const std::string& address, const u16 port, NetPlay
           if (Connect())
           {
             m_connection_state = ConnectionState::Connected;
-			MELEENET_LOG("Connected!");
+			MELEENET_LOG("Connected");
             m_thread = std::thread(&NetPlayClient::ThreadFunc, this);
           }
           return;
@@ -486,6 +486,7 @@ unsigned int NetPlayClient::OnData(sf::Packet& packet)
         player = it->second.name;
     }
     m_dialog->OnDesync(frame, player);
+	MELEENET_LOG("Desync Detected");
   }
   break;
 
@@ -917,7 +918,7 @@ void NetPlayClient::OnConnectReady(ENetAddress addr)
   if (m_connection_state == ConnectionState::WaitingForTraversalClientConnectReady)
   {
     m_connection_state = ConnectionState::Connecting;
-	MELEENET_LOG("Netplay Connecting");
+	//  MELEENET_LOG("Netplay Connecting");
     enet_host_connect(m_client, &addr, 0, 0);
   }
 }
@@ -925,7 +926,7 @@ void NetPlayClient::OnConnectReady(ENetAddress addr)
 // called from ---NETPLAY--- thread
 void NetPlayClient::OnConnectFailed(u8 reason)
 {
-	MELEENET_LOG("Connection Failed");
+  MELEENET_LOG("Connection Failed");
   m_connecting = false;
   m_connection_state = ConnectionState::Failure;
   switch (reason)

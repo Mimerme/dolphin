@@ -185,8 +185,6 @@ void CFrame::BindMenuBarEvents()
   Bind(wxEVT_MENU, &CFrame::OnHelp, this, IDM_HELP_GITHUB);
   Bind(wxEVT_MENU, &CFrame::OnHelp, this, wxID_ABOUT);
 
-  BIND_TOOLBAR_ITEM
-
   if (UseDebugger)
     BindDebuggerMenuBarEvents();
 }
@@ -311,6 +309,7 @@ void CFrame::BootGame(const std::string& filename)
   }
   if (!bootfile.empty())
   {
+	MELEENET_LOG("Starting Emulation");
     StartGame(bootfile);
     if (UseDebugger && g_pCodeWindow)
     {
@@ -751,8 +750,6 @@ void CFrame::OnScreenshot(wxCommandEvent& WXUNUSED(event))
   Core::SaveScreenShot();
 }
 
-TOOLBAR_ITEM_FUNCTION
-
 // Pause the emulation
 void CFrame::DoPause()
 {
@@ -858,6 +855,7 @@ void CFrame::DoStop()
       m_tried_graceful_shutdown = true;
       return;
     }
+	MELEENET_LOG("Stopping Emulation");
     Core::Stop();
     UpdateGUI();
   }

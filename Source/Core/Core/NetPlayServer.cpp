@@ -19,6 +19,7 @@
 #include "Core/NetPlayClient.h"  //for NetPlayUI
 #include "InputCommon/GCPadStatus.h"
 #include "DolphinWX/MeleeNET.h"
+#include "wx/log.h"
 
 #if !defined(_WIN32)
 #include <sys/socket.h>
@@ -821,7 +822,7 @@ bool NetPlayServer::StartGame()
   SendAsyncToClients(std::move(spac));
 
   m_is_running = true;
-
+  MELEENET_LOG("Netplay Game Starting");
   return true;
 }
 

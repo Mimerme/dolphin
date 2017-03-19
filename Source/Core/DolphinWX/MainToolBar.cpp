@@ -188,7 +188,6 @@ void MainToolBar::AddMainToolBarButtons()
                    _("Graphics settings"));
   AddToolBarButton(IDM_CONFIG_CONTROLLERS, TOOLBAR_CONTROLLER, _("Controllers"),
                    _("Controller settings"));
-  ADD_TOOLBAR_ITEM
 }
 
 void MainToolBar::AddDebuggerToolBarButtons()

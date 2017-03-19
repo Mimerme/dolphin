@@ -42,6 +42,7 @@ void MeleeNET::playerJoinServer(std::string playername, NetPlayServer *server) {
 		//if name is found
 		currentPlayerCount++;
 		if (expectedPlayerCount == currentPlayerCount) {
+			//Set some netplaya configurations, this NEEDS to be here
 			SConfig& instance = SConfig::GetInstance();
 			NetSettings settings;
 			settings.m_CPUthread = instance.bCPUThread;

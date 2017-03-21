@@ -918,7 +918,6 @@ void NetPlayClient::OnConnectReady(ENetAddress addr)
   if (m_connection_state == ConnectionState::WaitingForTraversalClientConnectReady)
   {
     m_connection_state = ConnectionState::Connecting;
-	//  MELEENET_LOG("Netplay Connecting");
     enet_host_connect(m_client, &addr, 0, 0);
   }
 }

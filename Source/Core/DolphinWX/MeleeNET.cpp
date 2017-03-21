@@ -15,6 +15,7 @@ std::string MeleeNET::expectedPlayerNames[3] = {"","",""};
 int MeleeNET::currentPlayerCount = 0;
 bool MeleeNET::spec = false;
 long MeleeNET::expectedPlayerCount = 2;
+wxString MeleeNET::playername = wxString("");
 
 void MeleeNET::onLogin() {
 	std::string g_OldServer = "stun.dolphin - emu.org";

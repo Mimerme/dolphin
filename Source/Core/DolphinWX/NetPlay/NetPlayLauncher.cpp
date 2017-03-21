@@ -11,6 +11,7 @@
 #include "DolphinWX/NetPlay/NetPlayLauncher.h"
 #include "DolphinWX/NetPlay/NetWindow.h"
 #include "DolphinWX/WxUtils.h"
+#include "DolphinWX/MeleeNET.h"
 
 bool NetPlayLauncher::Host(const NetPlayHostConfig& config)
 {
@@ -45,9 +46,16 @@ bool NetPlayLauncher::Host(const NetPlayHostConfig& config)
   npd = new NetPlayDialog(config.parent_window, config.game_list_ctrl, config.game_name, true);
 
   NetPlayClient*& netplay_client = NetPlayDialog::GetNetPlayClient();
-  netplay_client =
-      new NetPlayClient("127.0.0.1", netplay_server->GetPort(), npd, config.player_name, false,
-                        config.traversal_host, config.traversal_port);
+  if (MeleeNET::m_netplay) {
+	  netplay_client =
+		  new NetPlayClient("127.0.0.1", netplay_server->GetPort(), npd, std::string(MeleeNET::playername.mb_str()), false,
+			  config.traversal_host, config.traversal_port);
+  }
+  else {
+	  netplay_client =
+		  new NetPlayClient("127.0.0.1", netplay_server->GetPort(), npd, config.player_name, false,
+			  config.traversal_host, config.traversal_port);
+  }
 
   if (netplay_client->IsConnected())
   {
@@ -76,9 +84,16 @@ bool NetPlayLauncher::Join(const NetPlayJoinConfig& config)
   else
     host = config.connect_host;
 
-  netplay_client =
-      new NetPlayClient(host, config.connect_port, npd, config.player_name, config.use_traversal,
-                        config.traversal_host, config.traversal_port);
+  if (MeleeNET::m_netplay) {
+	  new NetPlayClient(host, config.connect_port, npd, std::string(MeleeNET::playername.mb_str()), config.use_traversal,
+		  config.traversal_host, config.traversal_port);
+  }
+  else {
+	  netplay_client =
+		  new NetPlayClient(host, config.connect_port, npd, config.player_name, config.use_traversal,
+			  config.traversal_host, config.traversal_port);
+  }
+
   if (netplay_client->IsConnected())
   {
     npd->SetSize(config.window_pos);

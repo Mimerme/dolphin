@@ -205,6 +205,9 @@ void DolphinApp::MacOpenFile(const wxString& fileName)
 
 void DolphinApp::AfterInit()
 {
+
+  MELEENET_LOG("Dolphin Launched")
+
   if (!m_batch_mode)
     main_frame->UpdateGameList();
 
@@ -353,7 +356,6 @@ void DolphinApp::OnIdle(wxIdleEvent& ev)
 {
   if (MeleeNET::initalized) {
 	AFTER_INIT
-	MELEENET_LOG("Dolphin Launched")
 	MeleeNET::initalized = false;
   }
   ev.Skip();

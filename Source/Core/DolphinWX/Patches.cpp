@@ -12,6 +12,8 @@ wxCMD_LINE_PARAM_OPTIONAL },\
 { wxCMD_LINE_OPTION, "player2", "player2", "Player 3 expected name (Host Only)", wxCMD_LINE_VAL_STRING,\
 wxCMD_LINE_PARAM_OPTIONAL },\
 { wxCMD_LINE_OPTION, "player3", "player3", "Player 4 expected name (Host Only)", wxCMD_LINE_VAL_STRING,\
+wxCMD_LINE_PARAM_OPTIONAL },\
+{ wxCMD_LINE_OPTION, "name", "playername", "Set netplay username", wxCMD_LINE_VAL_STRING,\
 wxCMD_LINE_PARAM_OPTIONAL },
 
 //#Usage : Main.cpp
@@ -28,7 +30,8 @@ if (parser.Found("player2", &temp)) {\
 }\
 if (parser.Found("player3", &temp)) {\
 	MeleeNET::expectedPlayerNames[1] = std::string(temp.mb_str());\
-}
+}\
+parser.Found("playername", &MeleeNET::playername);
 
 
 

@@ -9,6 +9,7 @@ public:
 	static bool m_netplay;
 	static bool m_netplay_host;
 
+	static wxString playername;
 	static long expectedPlayerCount;
 	static bool spec;
 	static std::string expectedPlayerNames[3];
